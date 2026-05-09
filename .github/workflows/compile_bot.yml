@@ -95,6 +95,10 @@ jobs:
             -DCMAKE_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
             -DCMAKE_NM=/usr/bin/llvm-nm-${LLVM_VERSION} \
             -DCMAKE_RANLIB=/usr/bin/llvm-ranlib-${LLVM_VERSION} \
+            -DCMAKE_C_COMPILER_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
+            -DCMAKE_CXX_COMPILER_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
+            -DCMAKE_C_COMPILER_RANLIB=/usr/bin/llvm-ranlib-${LLVM_VERSION} \
+            -DCMAKE_CXX_COMPILER_RANLIB=/usr/bin/llvm-ranlib-${LLVM_VERSION} \
             -DCMAKE_LINKER=/usr/bin/ld.lld-${LLVM_VERSION} \
             -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
             -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
