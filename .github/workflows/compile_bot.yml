@@ -76,6 +76,7 @@ jobs:
           cmake -S . -B ./build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=/usr/bin/clang-${LLVM_VERSION} \
             -DCMAKE_CXX_COMPILER=/usr/bin/clang++-${LLVM_VERSION} \
             -DCMAKE_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
             -DCMAKE_NM=/usr/bin/llvm-nm-${LLVM_VERSION} \
