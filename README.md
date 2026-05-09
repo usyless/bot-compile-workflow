@@ -1,0 +1,1 @@
+My convenience repository to compile my discord bots, where I keep my built artifacts in the releases

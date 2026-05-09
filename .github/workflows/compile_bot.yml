@@ -32,6 +32,16 @@ on:
         required: false
         default: false
         type: boolean
+      use_dpp:
+        description: "Use DPP"
+        required: false
+        type: boolean
+        default: false
+      use_jemalloc:
+        description: "Use jemalloc"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -90,6 +100,31 @@ jobs:
           cmake --build ./build --config Release
           EOF
           chmod +x build.sh
+
+      - name: Download and extract dpp.7z
+        if: ${{ inputs.use_dpp }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "dpp.7z"
+          7z x dpp.7z -odpp
+
+      - name: Inject DPP into CMakeLists.txt
+        if: ${{ inputs.use_dpp }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp/include)" >> CMakeLists.txt
+          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp)" >> CMakeLists.txt
+
+      - name: Download and extract libjemalloc.7z
+        if: ${{ inputs.use_jemalloc }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "libjemalloc.7z"
+          7z x libjemalloc.7z
+
+      - name: Inject jemalloc into CMakeLists.txt
+        if: ${{ inputs.use_jemalloc }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/libjemalloc.a pthread dl)" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
