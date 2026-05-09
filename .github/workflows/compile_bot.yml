@@ -119,7 +119,7 @@ jobs:
           echo "" >> CMakeLists.txt
           echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp/include)" >> CMakeLists.txt
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp)" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ssl crypto opus)" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ssl crypto opus z m)" >> CMakeLists.txt
 
       - name: Download and extract libjemalloc.7z
         if: ${{ inputs.use_jemalloc }}
