@@ -72,6 +72,10 @@ jobs:
             build-essential pkg-config \
             libssl-dev zlib1g-dev \
             ${{ inputs.extra_packages }}
+
+          if [ "${{ inputs.use_dpp }}" == "true" ]; then
+            sudo apt install -y --no-install-recommends libopus-dev
+          fi
           
           LLVM_VERSION="${{ inputs.llvm_version }}"
           wget https://apt.llvm.org/llvm.sh
@@ -115,6 +119,7 @@ jobs:
           echo "" >> CMakeLists.txt
           echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp/include)" >> CMakeLists.txt
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp)" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ssl crypto opus)" >> CMakeLists.txt
 
       - name: Download and extract libjemalloc.7z
         if: ${{ inputs.use_jemalloc }}
