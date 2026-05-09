@@ -1,1 +1,112 @@
+name: Build DPP for AArch64 (Pi 3B+)
 
+on:
+  workflow_call:
+    inputs:
+      llvm_version:
+        description: "LLVM version to install"
+        required: false
+        default: "22"
+        type: string
+      build_env:
+        description: "Environment to build in (native or qemu)"
+        required: false
+        default: "native"
+        type: string
+      extra_packages:
+        description: "Space-separated list of extra apt packages (e.g., libopus-dev)"
+        required: false
+        default: ""
+        type: string
+      artifact_path:
+        description: "Path to the built binary (e.g., build/my_bot)"
+        required: true
+        type: string
+      artifact_name:
+        description: "Name for the uploaded artifact"
+        required: false
+        default: "bot-build"
+        type: string
+      libc:
+        description: "Build with libc++"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ${{ inputs.build_env == 'native' && 'ubuntu-22.04-arm' || 'ubuntu-latest' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        
+      - name: Generate Build Script
+        run: |
+          cat << 'EOF' > build.sh
+          #!/bin/bash
+          set -e
+
+          sudo() {
+            if [ "$EUID" = 0 ]; then
+              "$@"
+            else
+              command sudo "$@"
+            fi
+          }
+
+          sudo apt update
+          sudo apt install -y --no-install-recommends \
+            wget lsb-release software-properties-common gnupg2 gpg \
+            ca-certificates git cmake ninja-build \
+            build-essential pkg-config \
+            libssl-dev zlib1g-dev \
+            ${{ inputs.extra_packages }}
+          
+          LLVM_VERSION="${{ inputs.llvm_version }}"
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh ${LLVM_VERSION}
+
+          if [ "${{ inputs.libc }}" == "true" ]; then
+            sudo apt install -y "libc++-${LLVM_VERSION}-dev" "libc++abi-${LLVM_VERSION}-dev"
+          fi
+
+          # Build bot
+          cmake -S . -B ./build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=/usr/bin/clang++-${LLVM_VERSION} \
+            -DCMAKE_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
+            -DCMAKE_NM=/usr/bin/llvm-nm-${LLVM_VERSION} \
+            -DCMAKE_RANLIB=/usr/bin/llvm-ranlib-${LLVM_VERSION} \
+            -DCMAKE_LINKER=/usr/bin/ld.lld-${LLVM_VERSION} \
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF
+          cmake --build ./build --config Release
+          EOF
+          chmod +x build.sh
+
+      - name: Set up QEMU
+        if: ${{ inputs.build_env == 'qemu' }}
+        uses: docker/setup-qemu-action@v4
+
+      - name: Build DPP (Native)
+        if: ${{ inputs.build_env == 'native' }}
+        run: ./build.sh
+
+      - name: Build DPP (QEMU / Docker)
+        if: ${{ inputs.build_env == 'qemu' }}
+        run: |
+          docker run --rm --platform linux/arm64 \
+            -v ${{ github.workspace }}:/workspace -w /workspace \
+            ubuntu:22.04 ./build.sh
+
+      - name: Upload built artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.artifact_path }}
