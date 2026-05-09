@@ -103,6 +103,8 @@ jobs:
 
       - name: Download and extract dpp.7z
         if: ${{ inputs.use_dpp }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "dpp.7z"
           7z x dpp.7z -odpp
@@ -116,6 +118,8 @@ jobs:
 
       - name: Download and extract libjemalloc.7z
         if: ${{ inputs.use_jemalloc }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "libjemalloc.7z"
           7z x libjemalloc.7z
