@@ -80,7 +80,7 @@ jobs:
           LLVM_VERSION="${{ inputs.llvm_version }}"
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh ${LLVM_VERSION}
+          sudo ./llvm.sh ${LLVM_VERSION} all
 
           if [ "${{ inputs.libc }}" == "true" ]; then
             sudo apt install -y "libc++-${LLVM_VERSION}-dev" "libc++abi-${LLVM_VERSION}-dev"
