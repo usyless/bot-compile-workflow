@@ -82,7 +82,7 @@ jobs:
 
           if [ "${{ inputs.libc }}" == "true" ]; then
             sudo apt install -y "libc++-${LLVM_VERSION}-dev" "libc++abi-${LLVM_VERSION}-dev"
-            DCMAKE_EXE_LINKER_FLAGS="${DCMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -Wl,-Bstatic -lc++abi -lc++ -Wl,-Bdynamic"
+            DCMAKE_EXE_LINKER_FLAGS="${DCMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -nostdlib++ /usr/lib/llvm-${LLVM_VERSION}/libc++.a  /usr/lib/llvm-${LLVM_VERSION}/libc++abi.a -lpthread -lm -lc -lgcc_s -lgcc"
             DCMAKE_CXX_FLAGS="${DCMAKE_CXX_FLAGS} -stdlib=libc++"
           fi
 
