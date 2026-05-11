@@ -37,6 +37,11 @@ on:
         required: false
         type: boolean
         default: false
+      use_opencv:
+        description: "Use opencv"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -117,7 +122,7 @@ jobs:
           gh release download --repo usyless/bot-compile-workflow --pattern "dpp.7z"
           7z x dpp.7z -odpp
         
-      - name: Download and extract dpp.7z with libstdc++
+      - name: Download and extract dpp_libstdc.7z with libstdc++
         if: ${{ inputs.use_dpp && !inputs.libc }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -132,6 +137,31 @@ jobs:
           echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp/include)" >> CMakeLists.txt
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp)" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ssl crypto opus z m)" >> CMakeLists.txt
+      
+      - name: Download and extract opencv.7z with libc++
+        if: ${{ inputs.use_opencv && inputs.libc }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "opencv.7z"
+          7z x opencv.7z -oopencv
+        
+      - name: Download and extract opencv_libstdc.7z with libstdc++
+        if: ${{ inputs.use_opencv && !inputs.libc }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "opencv_libstdc.7z"
+          7z x opencv_libstdc.7z -oopencv
+
+      - name: Inject opencv into CMakeLists.txt
+        if: ${{ inputs.use_opencv }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/include)" >> CMakeLists.txt
+          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib)" >> CMakeLists.txt
+          echo "file(GLOB opencv_ALL_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/*.a")" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ${opencv_ALL_LIBS})" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
