@@ -109,13 +109,21 @@ jobs:
           EOF
           chmod +x build.sh
 
-      - name: Download and extract dpp.7z
-        if: ${{ inputs.use_dpp }}
+      - name: Download and extract dpp.7z with libc++
+        if: ${{ inputs.use_dpp && inputs.libc }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "dpp.7z"
           7z x dpp.7z -odpp
+        
+      - name: Download and extract dpp.7z with libstdc++
+        if: ${{ inputs.use_dpp && !inputs.libc }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "dpp_libstdc.7z"
+          7z x dpp_libstdc.7z -odpp
 
       - name: Inject DPP into CMakeLists.txt
         if: ${{ inputs.use_dpp }}
