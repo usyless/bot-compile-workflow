@@ -160,8 +160,8 @@ jobs:
           echo "" >> CMakeLists.txt
           echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/include)" >> CMakeLists.txt
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib)" >> CMakeLists.txt
-          echo "file(GLOB opencv_ALL_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/*.a")" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ${opencv_ALL_LIBS})" >> CMakeLists.txt
+          echo "file(GLOB opencv_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/*.a\")" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
