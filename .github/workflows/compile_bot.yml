@@ -47,11 +47,6 @@ on:
         required: false
         type: boolean
         default: false
-      use_ffmpeg_pkgconfig:
-        description: "Use ffmpeg with pkgconfig"
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   build:
@@ -174,7 +169,7 @@ jobs:
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
 
       - name: Download and extract ffmpeg.7z
-        if: ${{ inputs.use_ffmpeg || inputs.use_ffmpeg_pkgconfig }}
+        if: ${{ inputs.use_ffmpeg }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -189,11 +184,6 @@ jobs:
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
           echo "file(GLOB ffmpeg_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
-
-      - name: Inject ffmpeg into pkg config path
-        if: ${{ inputs.use_ffmpeg_pkgconfig }}
-        run: |
-          export PKG_CONFIG_PATH="${{ github.workspace }}/ffmpeg/lib/pkginclude:$PKG_CONFIG_PATH"
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
