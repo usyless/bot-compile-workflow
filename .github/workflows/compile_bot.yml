@@ -190,7 +190,7 @@ jobs:
           echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/include)" >> CMakeLists.txt
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
           echo "file(GLOB ffmpeg_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib/*.a\")" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group lzma z bz2 pthread m dl)" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
