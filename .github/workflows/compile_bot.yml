@@ -42,6 +42,11 @@ on:
         required: false
         type: boolean
         default: false
+      use_ffmpeg:
+        description: "Use ffmpeg"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -162,6 +167,23 @@ jobs:
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib)" >> CMakeLists.txt
           echo "file(GLOB opencv_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
+
+      - name: Download and extract ffmpeg.7z
+        if: ${{ inputs.use_ffmpeg }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "ffmpeg.7z"
+          7z x ffmpeg.7z -offmpeg
+
+      - name: Inject ffmpeg into CMakeLists.txt
+        if: ${{ inputs.use_ffmpeg }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/include)" >> CMakeLists.txt
+          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
+          echo "file(GLOB ffmpeg_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib/*.a\")" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
