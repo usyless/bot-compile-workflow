@@ -18,6 +18,11 @@ on:
         required: false
         default: ""
         type: string
+      extra_cmake_args:
+        description: "Extra arguments to pass to CMake (e.g., -DBUILD_TESTING=OFF)"
+        required: false
+        default: ""
+        type: string
       artifact_path:
         description: "Path to the built binary (e.g., build/my_bot)"
         required: true
@@ -114,7 +119,9 @@ jobs:
             -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
             -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF \
+            ${{ inputs.extra_cmake_args }}
+            
           cmake --build ./build --config Release
           EOF
           chmod +x build.sh
