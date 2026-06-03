@@ -52,6 +52,11 @@ on:
         required: false
         type: boolean
         default: false
+      use_onnxruntime:
+        description: "Use onnxruntime"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -174,6 +179,31 @@ jobs:
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib)" >> CMakeLists.txt
           echo "file(GLOB opencv_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
+
+      - name: Download and extract onnxruntime.7z with libc++
+        if: ${{ inputs.use_onnxruntime && inputs.libc }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "onnxruntime.7z"
+          7z x onnxruntime.7z -oonnxruntime
+        
+      - name: Download and extract onnxruntime_libstdc.7z with libstdc++
+        if: ${{ inputs.use_onnxruntime && !inputs.libc }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "onnxruntime_libstdc.7z"
+          7z x onnxruntime_libstdc.7z -oonnxruntime
+
+      - name: Inject onnxruntime into CMakeLists.txt
+        if: ${{ inputs.use_onnxruntime }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/include)" >> CMakeLists.txt
+          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib)" >> CMakeLists.txt
+          echo "file(GLOB onnxruntime_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib/*.a\")" >> CMakeLists.txt
+          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${onnxruntime_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
 
       - name: Download and extract ffmpeg.7z
         if: ${{ inputs.use_ffmpeg }}
