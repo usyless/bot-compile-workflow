@@ -133,7 +133,11 @@ jobs:
       
       - name: Install newer 7zip
         if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_opencv || inputs.use_onnxruntime }}
-        run: sudo apt install 7zip
+        run: |
+          wget -O 7zip.tar.xz https://github.com/ip7z/7zip/releases/download/26.01/7z2601-linux-arm64.tar.xz
+          mkdir -y 7zip && tar -xf 7zip.tar.xz -C 7zip
+          sudo install -m 755 7zip/7zz /usr/local/bin/7z
+          rm -rf 7zip.tar.xz 7zip
 
       - name: Download and extract dpp.7z with libc++
         if: ${{ inputs.use_dpp && inputs.libc }}
@@ -141,7 +145,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "dpp.7z"
-          7zz x dpp.7z -odpp
+          7z x dpp.7z -odpp
         
       - name: Download and extract dpp_libstdc.7z with libstdc++
         if: ${{ inputs.use_dpp && !inputs.libc }}
@@ -149,7 +153,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "dpp_libstdc.7z"
-          7zz x dpp_libstdc.7z -odpp
+          7z x dpp_libstdc.7z -odpp
 
       - name: Inject DPP into CMakeLists.txt
         if: ${{ inputs.use_dpp }}
@@ -165,7 +169,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "opencv.7z"
-          7zz x opencv.7z -oopencv
+          7z x opencv.7z -oopencv
         
       - name: Download and extract opencv_libstdc.7z with libstdc++
         if: ${{ inputs.use_opencv && !inputs.libc }}
@@ -173,7 +177,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "opencv_libstdc.7z"
-          7zz x opencv_libstdc.7z -oopencv
+          7z x opencv_libstdc.7z -oopencv
 
       - name: Inject opencv into CMakeLists.txt
         if: ${{ inputs.use_opencv }}
@@ -190,7 +194,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "onnxruntime.7z"
-          7zz x onnxruntime.7z -oonnxruntime
+          7z x onnxruntime.7z -oonnxruntime
         
       - name: Download and extract onnxruntime_libstdc.7z with libstdc++
         if: ${{ inputs.use_onnxruntime && !inputs.libc }}
@@ -198,7 +202,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "onnxruntime_libstdc.7z"
-          7zz x onnxruntime_libstdc.7z -oonnxruntime
+          7z x onnxruntime_libstdc.7z -oonnxruntime
 
       - name: Inject onnxruntime into CMakeLists.txt
         if: ${{ inputs.use_onnxruntime }}
@@ -215,7 +219,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download --repo usyless/bot-compile-workflow --pattern "ffmpeg.7z"
-          7zz x ffmpeg.7z -offmpeg
+          7z x ffmpeg.7z -offmpeg
 
       - name: Inject ffmpeg into CMakeLists.txt
         if: ${{ inputs.use_ffmpeg }}
