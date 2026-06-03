@@ -135,7 +135,8 @@ jobs:
         if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_opencv || inputs.use_onnxruntime }}
         run: |
           wget -O 7zip.tar.xz https://github.com/ip7z/7zip/releases/download/26.01/7z2601-linux-arm64.tar.xz
-          mkdir -y 7zip && tar -xf 7zip.tar.xz -C 7zip
+          mkdir -p 7zip
+          tar -xf 7zip.tar.xz -C 7zip
           sudo install -m 755 7zip/7zz /usr/local/bin/7z
           rm -rf 7zip.tar.xz 7zip
 
