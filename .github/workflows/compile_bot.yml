@@ -101,7 +101,7 @@ jobs:
           DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}"
 
           if [ "${{ inputs.libc }}" == "true" ]; then
-            DCMAKE_EXE_LINKER_FLAGS="${DCMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -nostdlib++ /usr/lib/llvm-${LLVM_VERSION}/lib/libc++.a  /usr/lib/llvm-${LLVM_VERSION}/lib/libc++abi.a -lpthread -lm -lc -lgcc_s -lgcc"
+            DCMAKE_EXE_LINKER_FLAGS="${DCMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -nostdlib++ -Wl,--start-group /usr/lib/llvm-${LLVM_VERSION}/lib/libc++.a  /usr/lib/llvm-${LLVM_VERSION}/lib/libc++abi.a -Wl,--end-group -ldl -lpthread -lm -lc -lgcc_s -lgcc"
             DCMAKE_CXX_FLAGS="${DCMAKE_CXX_FLAGS} -stdlib=libc++"
           fi
 
