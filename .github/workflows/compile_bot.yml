@@ -209,7 +209,7 @@ jobs:
         if: ${{ inputs.use_onnxruntime }}
         run: |
           echo "" >> CMakeLists.txt
-          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/include)" >> CMakeLists.txt
+          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/include/onnxruntime)" >> CMakeLists.txt
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib)" >> CMakeLists.txt
           echo "file(GLOB onnxruntime_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${onnxruntime_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
