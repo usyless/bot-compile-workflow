@@ -57,6 +57,11 @@ on:
         required: false
         type: boolean
         default: false
+      libpiper_static_onnxruntime:
+        description: "Add static onnxruntime cmake args into libpiper"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -125,6 +130,7 @@ jobs:
             -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF \
+            ${LIBPIPER_EXTRA_CMAKE_ARGS} \
             ${{ inputs.extra_cmake_args }}
             
           cmake --build ./build --config Release
@@ -190,7 +196,7 @@ jobs:
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
 
       - name: Download and extract onnxruntime.7z with libc++
-        if: ${{ inputs.use_onnxruntime && inputs.libc }}
+        if: ${{ (inputs.use_onnxruntime || inputs.libpiper_static_onnxruntime) && inputs.libc }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -198,7 +204,7 @@ jobs:
           7z x onnxruntime.7z -oonnxruntime
         
       - name: Download and extract onnxruntime_libstdc.7z with libstdc++
-        if: ${{ inputs.use_onnxruntime && !inputs.libc }}
+        if: ${{ (inputs.use_onnxruntime || inputs.libpiper_static_onnxruntime) && !inputs.libc }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -213,6 +219,12 @@ jobs:
           echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib)" >> CMakeLists.txt
           echo "file(GLOB onnxruntime_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${onnxruntime_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
+      
+      - name: Inject onnxruntime into CMakeLists.txt
+        if: ${{ inputs.libpiper_static_onnxruntime }}
+        run: |
+          LIBS_STRING=$(echo $(pwd)/onnxruntime/lib/*.a)
+          echo "LIBPIPER_EXTRA_CMAKE_ARGS=-DLIBPIPER_USE_BUNDLED_ONNXRUNTIME=OFF -DLIBPIPER_ONNXRUNTIME_INCLUDE_DIRS=$(pwd)/onnxruntime/include/onnxruntime -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_DIRS=$(pwd)/onnxruntime/lib -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_FILES=\"${LIBS_STRING}\"" >> $GITHUB_ENV
 
       - name: Download and extract ffmpeg.7z
         if: ${{ inputs.use_ffmpeg }}
