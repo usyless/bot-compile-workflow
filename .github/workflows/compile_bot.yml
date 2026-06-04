@@ -224,7 +224,7 @@ jobs:
         if: ${{ inputs.libpiper_static_onnxruntime }}
         run: |
           LIBS_STRING=$(echo $(pwd)/onnxruntime/lib/*.a)
-          echo "LIBPIPER_EXTRA_CMAKE_ARGS=-DLIBPIPER_USE_BUNDLED_ONNXRUNTIME=OFF -DLIBPIPER_ONNXRUNTIME_INCLUDE_DIRS=$(pwd)/onnxruntime/include/onnxruntime -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_DIRS=$(pwd)/onnxruntime/lib -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_FILES=\"${LIBS_STRING}\"" >> $GITHUB_ENV
+          echo "LIBPIPER_EXTRA_CMAKE_ARGS=-DLIBPIPER_USE_BUNDLED_ONNXRUNTIME=OFF -DLIBPIPER_ONNXRUNTIME_INCLUDE_DIRS=$(pwd)/onnxruntime/include/onnxruntime -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_DIRS=$(pwd)/onnxruntime/lib -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_FILES=${LIBS_STRING}" >> $GITHUB_ENV
 
       - name: Download and extract ffmpeg.7z
         if: ${{ inputs.use_ffmpeg }}
