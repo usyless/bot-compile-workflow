@@ -220,7 +220,7 @@ jobs:
           echo "file(GLOB onnxruntime_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${onnxruntime_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
       
-      - name: Inject onnxruntime into CMakeLists.txt
+      - name: Prepare static onnxruntime libpiper cmake definitions
         if: ${{ inputs.libpiper_static_onnxruntime }}
         run: |
           LIBS_STRING=$(echo $(pwd)/onnxruntime/lib/*.a)
