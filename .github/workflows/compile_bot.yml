@@ -248,11 +248,11 @@ jobs:
         if: ${{ inputs.build_env == 'qemu' }}
         uses: docker/setup-qemu-action@v4
 
-      - name: Build DPP (Native)
+      - name: Build (Native)
         if: ${{ inputs.build_env == 'native' }}
         run: ./build.sh
 
-      - name: Build DPP (QEMU / Docker)
+      - name: Build (QEMU / Docker)
         if: ${{ inputs.build_env == 'qemu' }}
         run: |
           docker run --rm --platform linux/arm64 \
