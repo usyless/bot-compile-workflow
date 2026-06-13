@@ -13,6 +13,11 @@ on:
         required: false
         default: "native"
         type: string
+      build_type:
+        description: "Type of build to use: Release, Debug, etc"
+        required: false
+        default: "Release"
+        type: string
       extra_packages:
         description: "Space-separated list of extra apt packages (e.g., libopus-dev)"
         required: false
@@ -113,7 +118,7 @@ jobs:
           # Build bot
           cmake -S . -B ./build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
             -DCMAKE_C_COMPILER=/usr/bin/clang-${LLVM_VERSION} \
             -DCMAKE_CXX_COMPILER=/usr/bin/clang++-${LLVM_VERSION} \
             -DCMAKE_CXX_FLAGS="${DCMAKE_CXX_FLAGS}" \
@@ -133,7 +138,7 @@ jobs:
             ${LIBPIPER_EXTRA_CMAKE_ARGS} \
             ${{ inputs.extra_cmake_args }}
             
-          cmake --build ./build --config Release
+          cmake --build ./build --config ${{ inputs.build_type }}
           EOF
           chmod +x build.sh
       
