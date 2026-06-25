@@ -28,6 +28,11 @@ on:
         required: false
         default: ""
         type: string
+      extra_cmake_build_args:
+        description: "Extra arguments to pass to CMake --build (e.g., --target whatever)"
+        required: false
+        default: ""
+        type: string
       artifact_path:
         description: "Path to the built binary (e.g., build/my_bot)"
         required: true
@@ -138,7 +143,7 @@ jobs:
             ${LIBPIPER_EXTRA_CMAKE_ARGS} \
             ${{ inputs.extra_cmake_args }}
             
-          cmake --build ./build --config ${{ inputs.build_type }}
+          cmake --build ./build --config ${{ inputs.build_type }} ${{ inputs.extra_cmake_build_args }}
           EOF
           chmod +x build.sh
       
