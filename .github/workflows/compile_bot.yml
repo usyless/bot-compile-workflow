@@ -72,6 +72,16 @@ on:
         required: false
         type: boolean
         default: false
+      inject_target:
+        description: "Target to inject deps into (defaults to ${PROJECT_NAME})"
+        required: false
+        default: ""
+        type: string
+      inject_visibility:
+        description: "Visibility keyword for injected deps: PRIVATE, PUBLIC or INTERFACE"
+        required: false
+        default: "PRIVATE"
+        type: string
 
 jobs:
   build:
@@ -146,6 +156,13 @@ jobs:
           cmake --build ./build --config ${{ inputs.build_type }} ${{ inputs.extra_cmake_build_args }}
           EOF
           chmod +x build.sh
+
+      - name: Resolve injection target
+        run: |
+          TARGET='${{ inputs.inject_target }}'
+          if [ -z "$TARGET" ]; then TARGET='${PROJECT_NAME}'; fi
+          echo "INJECT_TARGET=$TARGET" >> $GITHUB_ENV
+          echo "INJECT_VIS=${{ inputs.inject_visibility }}" >> $GITHUB_ENV
       
       - name: Install newer 7zip
         if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_opencv || inputs.use_onnxruntime }}
@@ -176,9 +193,9 @@ jobs:
         if: ${{ inputs.use_dpp }}
         run: |
           echo "" >> CMakeLists.txt
-          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp/include)" >> CMakeLists.txt
-          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/dpp)" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE ssl crypto opus z m)" >> CMakeLists.txt
+          echo "target_include_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/dpp/include)" >> CMakeLists.txt
+          echo "target_link_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/dpp)" >> CMakeLists.txt
+          echo "target_link_libraries($INJECT_TARGET $INJECT_VIS ssl crypto opus z m)" >> CMakeLists.txt
       
       - name: Download and extract opencv.7z with libc++
         if: ${{ inputs.use_opencv && inputs.libc }}
@@ -200,10 +217,10 @@ jobs:
         if: ${{ inputs.use_opencv }}
         run: |
           echo "" >> CMakeLists.txt
-          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/include)" >> CMakeLists.txt
-          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib)" >> CMakeLists.txt
+          echo "target_include_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/opencv/include)" >> CMakeLists.txt
+          echo "target_link_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib)" >> CMakeLists.txt
           echo "file(GLOB opencv_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/*.a\")" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
+          echo "target_link_libraries($INJECT_TARGET $INJECT_VIS -Wl,--start-group \${opencv_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
 
       - name: Download and extract onnxruntime.7z with libc++
         if: ${{ (inputs.use_onnxruntime || inputs.libpiper_static_onnxruntime) && inputs.libc }}
@@ -225,10 +242,10 @@ jobs:
         if: ${{ inputs.use_onnxruntime }}
         run: |
           echo "" >> CMakeLists.txt
-          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/include/onnxruntime)" >> CMakeLists.txt
-          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib)" >> CMakeLists.txt
+          echo "target_include_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/include/onnxruntime)" >> CMakeLists.txt
+          echo "target_link_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib)" >> CMakeLists.txt
           echo "file(GLOB onnxruntime_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime/lib/*.a\")" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${onnxruntime_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
+          echo "target_link_libraries($INJECT_TARGET $INJECT_VIS -Wl,--start-group \${onnxruntime_ALL_LIBS} -Wl,--end-group)" >> CMakeLists.txt
       
       - name: Prepare static onnxruntime libpiper cmake definitions
         if: ${{ inputs.libpiper_static_onnxruntime }}
@@ -249,10 +266,10 @@ jobs:
         if: ${{ inputs.use_ffmpeg }}
         run: |
           echo "" >> CMakeLists.txt
-          echo "target_include_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/include)" >> CMakeLists.txt
-          echo "target_link_directories(\${PROJECT_NAME} PRIVATE \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
+          echo "target_include_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/include)" >> CMakeLists.txt
+          echo "target_link_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
           echo "file(GLOB ffmpeg_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib/*.a\")" >> CMakeLists.txt
-          echo "target_link_libraries(\${PROJECT_NAME} PRIVATE -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group lzma z bz2 pthread m dl)" >> CMakeLists.txt
+          echo "target_link_libraries($INJECT_TARGET $INJECT_VIS -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group lzma z bz2 pthread m dl)" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
