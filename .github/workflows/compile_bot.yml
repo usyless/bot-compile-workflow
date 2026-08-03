@@ -165,7 +165,7 @@ jobs:
           echo "INJECT_VIS=${{ inputs.inject_visibility }}" >> $GITHUB_ENV
       
       - name: Install newer 7zip
-        if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_opencv || inputs.use_onnxruntime }}
+        if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_opencv || inputs.use_onnxruntime || inputs.libpiper_static_onnxruntime}}
         run: |
           wget -O 7zip.tar.xz https://github.com/ip7z/7zip/releases/download/26.01/7z2601-linux-arm64.tar.xz
           mkdir -p 7zip
