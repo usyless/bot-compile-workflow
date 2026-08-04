@@ -82,6 +82,11 @@ on:
         required: false
         default: "PRIVATE"
         type: string
+      with_boost_process:
+        description: "Add Boost.Process to DISCUSY_EXTRA_BOOST_LIBS and link Boost::process"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -151,6 +156,7 @@ jobs:
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF \
             ${LIBPIPER_EXTRA_CMAKE_ARGS} \
+            ${BOOST_EXTRA_CMAKE_ARGS} \
             ${{ inputs.extra_cmake_args }}
             
           cmake --build ./build --config ${{ inputs.build_type }} ${{ inputs.extra_cmake_build_args }}
@@ -253,6 +259,16 @@ jobs:
           LIBS_ARRAY=($(pwd)/onnxruntime/lib/*.a)
           LIBS_SEMICOLON=$(IFS=';'; echo "${LIBS_ARRAY[*]}")
           echo "LIBPIPER_EXTRA_CMAKE_ARGS=-DLIBPIPER_USE_BUNDLED_ONNXRUNTIME=OFF -DLIBPIPER_ONNXRUNTIME_INCLUDE_DIRS=$(pwd)/onnxruntime/include/onnxruntime -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_DIRS=$(pwd)/onnxruntime/lib -DLIBPIPER_ONNXRUNTIME_TARGET_LINK_FILES=${LIBS_SEMICOLON}" >> $GITHUB_ENV
+      
+      - name: Prepare Boost.Process cmake definitions
+        if: ${{ inputs.with_boost_process }}
+        run: echo 'BOOST_EXTRA_CMAKE_ARGS=-DDISCUSY_EXTRA_BOOST_LIBS=process' >> $GITHUB_ENV
+
+      - name: Inject Boost::process into CMakeLists.txt
+        if: ${{ inputs.with_boost_process }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_link_libraries($INJECT_TARGET $INJECT_VIS Boost::process)" >> CMakeLists.txt
 
       - name: Download and extract ffmpeg.7z
         if: ${{ inputs.use_ffmpeg }}
@@ -283,7 +299,7 @@ jobs:
         if: ${{ inputs.build_env == 'qemu' }}
         run: |
           docker run --rm --platform linux/arm64 \
-            -v ${{ github.workspace }}:/workspace -w /workspace \
+            -v ${{ github.workspace }}:/workspace -w /workspace -e BOOST_EXTRA_CMAKE_ARGS -e LIBPIPER_EXTRA_CMAKE_ARGS \
             ubuntu:22.04 ./build.sh
 
       - name: Upload built artifact
