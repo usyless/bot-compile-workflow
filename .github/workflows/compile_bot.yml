@@ -110,10 +110,17 @@ jobs:
             fi
           }
 
+          cmake_version=4.4.0
+          wget https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-linux-x86_64.sh
+          chmod +x cmake-${cmake_version}-linux-x86_64.sh
+          mkdir $(pwd)/cmake
+          ./cmake-${cmake_version}-linux-x86_64.sh --skip-license --prefix=$(pwd)/cmake
+          echo "$(pwd)/cmake/bin" >> $GITHUB_PATH
+
           sudo apt update
           sudo apt install -y --no-install-recommends \
             wget lsb-release software-properties-common gnupg2 gpg \
-            ca-certificates git cmake ninja-build \
+            ca-certificates git ninja-build \
             build-essential pkg-config \
             libssl-dev zlib1g-dev \
             ${{ inputs.extra_packages }}
