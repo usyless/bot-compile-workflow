@@ -308,7 +308,7 @@ jobs:
           7z x ffmpeg_dynamic.7z -offmpeg
 
       - name: Inject ffmpeg dynamic into CMakeLists.txt
-        if: ${{ inputs.ffmpeg_dynamic }}
+        if: ${{ inputs.use_ffmpeg_dynamic }}
         run: |
           echo "" >> CMakeLists.txt
           echo "target_include_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/include)" >> CMakeLists.txt
