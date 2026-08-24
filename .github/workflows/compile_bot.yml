@@ -62,6 +62,11 @@ on:
         required: false
         type: boolean
         default: false
+      use_ffmpeg_dynamic:
+        description: "Use ffmpeg dynamic"
+        required: false
+        type: boolean
+        default: false
       use_onnxruntime:
         description: "Use onnxruntime"
         required: false
@@ -178,7 +183,7 @@ jobs:
           echo "INJECT_VIS=${{ inputs.inject_visibility }}" >> $GITHUB_ENV
       
       - name: Install newer 7zip
-        if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_opencv || inputs.use_onnxruntime || inputs.libpiper_static_onnxruntime}}
+        if: ${{ inputs.use_dpp || inputs.use_ffmpeg || inputs.use_ffmpeg_dynamic || inputs.use_opencv || inputs.use_onnxruntime || inputs.libpiper_static_onnxruntime}}
         run: |
           wget -O 7zip.tar.xz https://github.com/ip7z/7zip/releases/download/26.01/7z2601-linux-arm64.tar.xz
           mkdir -p 7zip
@@ -293,6 +298,23 @@ jobs:
           echo "target_link_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
           echo "file(GLOB ffmpeg_ALL_LIBS \"\${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib/*.a\")" >> CMakeLists.txt
           echo "target_link_libraries($INJECT_TARGET $INJECT_VIS -Wl,--start-group \${ffmpeg_ALL_LIBS} -Wl,--end-group lzma z bz2 pthread m dl)" >> CMakeLists.txt
+
+      - name: Download and extract ffmpeg_dynamic.7z
+        if: ${{ inputs.use_ffmpeg_dynamic }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo usyless/bot-compile-workflow --pattern "ffmpeg_dynamic.7z"
+          7z x ffmpeg_dynamic.7z -offmpeg
+
+      - name: Inject ffmpeg dynamic into CMakeLists.txt
+        if: ${{ inputs.ffmpeg_dynamic }}
+        run: |
+          echo "" >> CMakeLists.txt
+          echo "target_include_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/include)" >> CMakeLists.txt
+          echo "target_link_directories($INJECT_TARGET $INJECT_VIS \${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg/lib)" >> CMakeLists.txt
+          echo "target_link_libraries($INJECT_TARGET $INJECT_VIS avformat avcodec swresample avutil)" >> CMakeLists.txt
+          echo "set_target_properties($INJECT_TARGET PROPERTIES BUILD_RPATH \"\\\$ORIGIN\" INSTALL_RPATH \"\\\$ORIGIN\")" >> CMakeLists.txt
 
       - name: Set up QEMU
         if: ${{ inputs.build_env == 'qemu' }}
