@@ -118,9 +118,9 @@ jobs:
           cmake_version=4.4.0
           wget https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-linux-x86_64.sh
           chmod +x cmake-${cmake_version}-linux-x86_64.sh
-          mkdir $(pwd)/cmake
-          ./cmake-${cmake_version}-linux-x86_64.sh --skip-license --prefix=$(pwd)/cmake
-          echo "$(pwd)/cmake/bin" >> $GITHUB_PATH
+          mkdir $(pwd)/tmp_cmake__tmp
+          ./cmake-${cmake_version}-linux-x86_64.sh --skip-license --prefix=$(pwd)/tmp_cmake__tmp
+          echo "$(pwd)/tmp_cmake__tmp/bin" >> $GITHUB_PATH
 
           sudo apt update
           sudo apt install -y --no-install-recommends \
