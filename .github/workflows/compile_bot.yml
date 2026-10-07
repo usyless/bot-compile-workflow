@@ -125,7 +125,7 @@ jobs:
           MOLD_ARCH=$(uname -m)
           wget -qO - "https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-${MOLD_ARCH}-linux.tar.gz" | sudo tar -C /usr/local --strip-components=1 -xzf -
           
-          LLVM_VERSION="${{ inputs.llvm_version }}"
+          LLVM_VERSION="${{ inputs.llvm_version || '23' }}"
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh ${LLVM_VERSION} all
