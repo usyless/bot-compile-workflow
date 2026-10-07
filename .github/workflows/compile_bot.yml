@@ -119,6 +119,11 @@ jobs:
             build-essential pkg-config \
             libssl-dev zlib1g-dev \
             ${{ inputs.extra_packages }}
+
+          # Install mold
+          MOLD_VERSION="3.0.0"
+          MOLD_ARCH=$(uname -m)
+          wget -qO - "https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-${MOLD_ARCH}-linux.tar.gz" | sudo tar -C /usr/local --strip-components=1 -xzf -
           
           LLVM_VERSION="${{ inputs.llvm_version }}"
           wget https://apt.llvm.org/llvm.sh
@@ -126,7 +131,7 @@ jobs:
           sudo ./llvm.sh ${LLVM_VERSION} all
 
           DCMAKE_CXX_FLAGS="-mcpu=cortex-a53"
-          DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}"
+          DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/local/bin/mold"
 
           if [ "${{ inputs.libc }}" == "true" ]; then
             DCMAKE_EXE_LINKER_FLAGS="${DCMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -nostdlib++ -Wl,--start-group /usr/lib/llvm-${LLVM_VERSION}/lib/libc++.a  /usr/lib/llvm-${LLVM_VERSION}/lib/libc++abi.a -Wl,--end-group -ldl -lpthread -lm -lc -lgcc_s -lgcc"
@@ -147,10 +152,10 @@ jobs:
             -DCMAKE_CXX_COMPILER_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
             -DCMAKE_C_COMPILER_RANLIB=/usr/bin/llvm-ranlib-${LLVM_VERSION} \
             -DCMAKE_CXX_COMPILER_RANLIB=/usr/bin/llvm-ranlib-${LLVM_VERSION} \
-            -DCMAKE_LINKER=/usr/bin/ld.lld-${LLVM_VERSION} \
+            -DCMAKE_LINKER=/usr/local/bin/mold \
             -DCMAKE_EXE_LINKER_FLAGS="${DCMAKE_EXE_LINKER_FLAGS}" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=/usr/bin/ld.lld-${LLVM_VERSION}" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=/usr/local/bin/mold" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=/usr/local/bin/mold" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF \
             ${LIBPIPER_EXTRA_CMAKE_ARGS} \
