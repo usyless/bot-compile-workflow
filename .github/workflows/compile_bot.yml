@@ -6,7 +6,7 @@ on:
       llvm_version:
         description: "LLVM version to install"
         required: false
-        default: "22"
+        default: "23"
         type: string
       build_env:
         description: "Environment to build in (native or qemu)"
