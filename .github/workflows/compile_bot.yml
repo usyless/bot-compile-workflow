@@ -158,6 +158,7 @@ jobs:
             -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=/usr/local/bin/mold" \
             -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=OFF \
+            -DDISCUSY_ENABLE_PCH=OFF \
             ${LIBPIPER_EXTRA_CMAKE_ARGS} \
             ${BOOST_EXTRA_CMAKE_ARGS} \
             ${{ inputs.extra_cmake_args }}
