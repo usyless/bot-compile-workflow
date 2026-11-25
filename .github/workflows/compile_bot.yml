@@ -130,6 +130,7 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh ${LLVM_VERSION} all
 
+          DCMAKE_C_FLAGS="-mcpu=cortex-a53"
           DCMAKE_CXX_FLAGS="-mcpu=cortex-a53"
           DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/local/bin/mold"
 
@@ -144,6 +145,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
             -DCMAKE_C_COMPILER=/usr/bin/clang-${LLVM_VERSION} \
             -DCMAKE_CXX_COMPILER=/usr/bin/clang++-${LLVM_VERSION} \
+            -DCMAKE_C_FLAGS="${DCMAKE_C_FLAGS}" \
             -DCMAKE_CXX_FLAGS="${DCMAKE_CXX_FLAGS}" \
             -DCMAKE_AR=/usr/bin/llvm-ar-${LLVM_VERSION} \
             -DCMAKE_NM=/usr/bin/llvm-nm-${LLVM_VERSION} \
@@ -161,6 +163,7 @@ jobs:
             -DDISCUSY_ENABLE_PCH=OFF \
             -DDISCUSY_USE_ETF=ON \
             -DDISCUSY_USE_MIMALLOC=ON \
+            -DMI_OPT_ARCH=OFF \
             -DDISCUSY_USE_INTERPROCEDURAL_OPTIMIZATION=ON \
             ${LIBPIPER_EXTRA_CMAKE_ARGS} \
             ${BOOST_EXTRA_CMAKE_ARGS} \
